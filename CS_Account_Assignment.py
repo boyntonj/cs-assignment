@@ -1,216 +1,190 @@
+# from flask import Flask, request, render_template, flash, session
+# from flask_wtf import FlaskForm
+# from wtforms import StringField, SubmitField, SelectField, FileField
+# from wtforms.validators import DataRequired
+# from werkzeug.utils import secure_filename
 import pandas as pd
 
-# Defining lifecycle stages and their weights
-stages = {
+# import_file = None
+
+import_file = "./test_csv.csv" #import data csv from root folder
+
+stages = { ## weight for each stage of the customer journey
     "Onboarding": 3.5,
     "Adoption": 3,
     "Value Realization": 1.5,
-    "Maintenance/Renewal": 0.25,
+    "Maintenance": 0.25,
 }
 
-# Defining weights for license count bands
-license_bands = {
-    range(50, 99): 1,
-    range(100, 249): 1.1,
-    range(250, 499): 1.2,
-    range(500, 999): 1.3,
-    range(1000, 99999): 1.4,
+license_bands = { ## weight for each license count band
+    range(0, 99): 1,
+    range(100, 249): 1.25,
+    range(250, 499): 1.5,
+    range(500, 999): 2,
+    range(1000, 9999999): 2.5,
 }
 
+timezones = {
+    "US-East": [-5, -4],
+    "US-West": [-8, -7],
+    "US-Central": [-6, -5],
+    "US-Mountain": [-7, -6],
+    "EU-West": [0, 1],
+    "EU-Central": [1, 2],
+    "EU-East": [2, 3],
+    "Australia-West": [8, 9],
+    "Australia-Central": [9, 10],
+    "Australia-East": [10, 11],
+    "India": [5.5, 6.5],
+    "Japan": [9, 10],
+    "China": [8, 9],
+}
 
 def get_license_band_weight(licenses):
     for band, weight in license_bands.items():
         if licenses in band:
             return weight
 
+def get_stage_weight(stage):
+    return stages[stage]
 
-# Existing CSM Data, including time zone residency and languages - Will have to build something else that populates this array from SFDC
-csmdata = [
+def import_csv(file):
+    if file is None:
+        return None
+    else:
+        df = pd.read_csv(file, encoding='iso-8859-1')
+        return df
+
+# portfolio = [ # Dummy Portfolio data for testing
+#                 {
+#                 "name": "Customer1",
+#                 "stage": "Maintenance",
+#                 "licenses": 1000,
+#                 "industry": "Technology",
+#                 "timezone": "US-East",
+#                 "csm": "CSM1",
+#                 },
+#                 {
+#                 "name": "Customer2",
+#                 "stage": "Adoption",
+#                 "licenses": 200,
+#                 "industry": "Technology",
+#                 "timezone": "US-East",
+#                 "csm": "CSM1",
+#                 },
+#                 {
+#                 "name": "Customer3",
+#                 "stage": "Onboarding",
+#                 "licenses": 100,
+#                 "industry": "Technology",
+#                 "timezone": "US-East",
+#                 "csm": "CSM1",
+#                 },
+#                 {
+#                 "name": "Customer4",
+#                 "stage": "Adoption",
+#                 "licenses": 200,
+#                 "industry": "Technology",
+#                 "timezone": "US-East",
+#                 "csm": "CSM3",
+#                 },
+#                 {
+#                 "name": "Customer5",
+#                 "stage": "Onboarding",
+#                 "licenses": 10000,
+#                 "industry": "Technology",
+#                 "timezone": "US-East",
+#                 "csm": "CSM2",
+#                 },
+#                 {
+#                 "name": "Customer6",
+#                 "stage": "Adoption",
+#                 "licenses": 500,
+#                 "industry": "Technology",
+#                 "timezone": "US-East",
+#                 "csm": "CSM1",
+#                 },
+            
+# ] 
+
+csms = [ ## base info for each CSM, i.e. name, language, timezone
     {
-        "name": "John Jones",
-        "customers": [
-            {
-                "name": "Customer A",
-                "stage": "Onboarding",
-                "licenses": 140,
-                "industry": "Finance",
-            },
-            {
-                "name": "Customer B",
-                "stage": "Value Realization",
-                "licenses": 400,
-                "industry": "Manufacturing",
-            },
-            {
-                "name": "Customer C",
-                "stage": "Maintenance/Renewal",
-                "licenses": 234,
-                "industry": "Finance",
-            },
-            {
-                "name": "Customer D",
-                "stage": "Adoption",
-                "licenses": 320,
-                "industry": "Manufacturing",
-            },
-        ],
+        "name": "CSM1",
         "language": "English",
-        "timezone": "US-Eastern",
+        "timezone": "US-East",
     },
     {
-        "name": "Jane Smith",
-        "customers": [
-            {
-                "name": "Customer E",
-                "stage": "Maintenance/Renewal",
-                "licenses": 412,
-                "industry": "Medical",
-            },
-            {
-                "name": "Customer F",
-                "stage": "Adoption",
-                "licenses": 268,
-                "industry": "Software",
-            },
-            {
-                "name": "Customer G",
-                "stage": "Adoption",
-                "licenses": 112,
-                "industry": "Manufacturing",
-            },
-            {
-                "name": "Customer H",
-                "stage": "Onboarding",
-                "licenses": 520,
-                "industry": "Software",
-            },
-        ],
+        "name": "CSM2",
         "language": "English",
-        "timezone": "US-Pacific",
+        "timezone": "US-East",
     },
     {
-        "name": "Mike Brown",
-        "customers": [
-            {
-                "name": "Customer I",
-                "stage": "Maintenance/Renewal",
-                "licenses": 76,
-                "industry": "Manufacturing",
-            },
-            {
-                "name": "Customer J",
-                "stage": "Maintenance/Renewal",
-                "licenses": 112,
-                "industry": "Medical",
-            },
-            {
-                "name": "Customer K",
-                "stage": "Onboarding",
-                "licenses": 230,
-                "industry": "Finance",
-            },
-            {
-                "name": "Customer L",
-                "stage": "Onboarding",
-                "licenses": 315,
-                "industry": "Software",
-            },
-        ],
+        "name": "CSM3",
         "language": "English",
-        "timezone": "Western-European",
-    },
+        "timezone": "US-East",
+    }
 ]
 
-df = pd.DataFrame(csmdata)
-
-
-# Calculate bandwidth score for each CSM
-def calculate_bandwidth(row):
-    score = 0
-    for customer in row.customers:
-        score += stages[customer["stage"]] * get_license_band_weight(
-            customer["licenses"]
-        )
+def get_cust_bandwidth_score(row):
+    score = get_stage_weight(row["stage"]) * get_license_band_weight(row["licenses"])
     return score
 
+def set_customer_bandwidths():
+    for customer in portfolio_data:
+        score = get_cust_bandwidth_score(customer)
+        customer["bandwidth"] = score
 
-df["bandwidth"] = df.apply(calculate_bandwidth, axis=1)
+def set_csm_bandwidths():
+    for customer in portfolio_data:
+        for csm in csms:
+            if customer["csm"] == csm["name"]:
+                if "bandwidth" not in csm:
+                    csm["bandwidth"] = 0
+                    score = get_cust_bandwidth_score(customer)
+                    csm["bandwidth"] = csm["bandwidth"] + score 
+                else: 
+                    score = get_cust_bandwidth_score(customer)
+                    csm["bandwidth"] = csm["bandwidth"] + score  
 
-# Define the incoming customer's details
-incoming_customer = {
-    "name": "ACME Corp",
-    "language": "English",
-    "timezone": "US-Eastern",
-    "industry": "Software",
-    "licenses": 800,
-}
+if import_file is not None:
+    portfolio_data = import_csv(import_file)
+    full_portfolio_df = portfolio_data
+else:
+    portfolio_data = portfolio
 
-# Filter out language-incompatible CSMs
-df = df[df.language == incoming_customer["language"]]
+# set_customer_bandwidths()
+# set_csm_bandwidths()
 
-# Filter by timezone
-timezones = {
-    "US-Eastern": [-5, -4],
-    "US-Central": [-6, -5],
-    "US-Mountain": [-7, -6],
-    "US-Pacific": [-8, -7],
-    "Western-European": [0, 1],
-    "Central-European": [1, 2],
-    "Eastern-European": [2, 3],
-    "Indian": [5.5, 6.5],
-    "Australian": [8, 10],
-    "Singaporean": [8, 8],
-    "Japanese": [9, 9],
-    "Chinese": [8, 8],
-    "Korean": [9, 9],
-    "Taiwanese": [8, 8],
-    "Brazilian": [-3, -3],
-    "Mexican": [-6, -5],
-    "Canadian": [-5, -4],
-    "Russian": [3, 4],
-    "South African": [2, 2],
-}
-
-incoming_timezone_hours = timezones[incoming_customer["timezone"]]
-
-df = df[
-    df.timezone.apply(lambda x: abs(incoming_timezone_hours[0] - timezones[x][0]) <= 5)
-]
-
-
-# Assign industry factor
-def industry_factor(row):
-    industry_customers = [
-        customer
-        for customer in row.customers
-        if customer["industry"] == incoming_customer["industry"]
-    ]
-    return len(industry_customers)
-
-
-df["industry_factor"] = df.apply(industry_factor, axis=1)
-
-# Combine bandwidth and industry factor
-industry_weight = (
-    1.1  # if the new customer has industry overlap with the CSM, we give it a 10% boost
+csm_info_df = pd.DataFrame(csms) ## creates dataframe from base info from each CSM, i.e. name, language, timezone
+full_portfolio_df = full_portfolio_df.rename(columns= { 
+            "Key Domain":"domain",
+            "Account: Account Name":"account", 
+            "Postman Team: Postman Team Name":"name", 
+            "Account: Industry":"industry", 
+            "Account: CSM":"csm",
+            "Account: Stage":"stage",
+            "Active Plan":"plan",
+            "Account: # of Paid Team Licenses (Account)":"licenses",
+            "Account: Language":"language",
+            }
 )
-df["load_score"] = df.bandwidth + (df.industry_factor * industry_weight)
 
-# Print incoming customer information
-print(
-    f"\nCaclulating CSM recommendation for incoming customer '{incoming_customer['name']}':"
-)
-print(f"Customer Licenses: {incoming_customer['licenses']}")
-print(f"Customer Language: {incoming_customer['language']}")
-print(f"Customer Timezone: {incoming_customer['timezone']}")
-print(f"Customer Industry: {incoming_customer['industry']}")
+if "stage" not in full_portfolio_df.columns:
+    full_portfolio_df["stage"] = "Onboarding"
+if "language" not in full_portfolio_df.columns:
+    full_portfolio_df["language"] = "English"
+if "timezone" not in full_portfolio_df.columns:
+    full_portfolio_df["timezone"] = "US-East"
 
-# Print load scores
-print("\nCSM Bandwidth Scores:")
-for i, row in df.iterrows():
-    print(f"CSM: {row['name']}, Bandwidth Score: {row['load_score']}")
+portfolio_df = full_portfolio_df[["csm", "domain", "stage", "licenses", "industry", "language", "timezone"]]
 
-# Get the CSM with the lowest load_score
-recommended_csm = df[df.load_score == df.load_score.min()].name.values[0]
+portfolio_df["band_weight"] = portfolio_df["licenses"].apply(get_license_band_weight)
+portfolio_df["stage_weight"] = portfolio_df["stage"].apply(get_stage_weight)
+portfolio_df["bandwidth_score"] = portfolio_df["band_weight"] * portfolio_df["stage_weight"]
 
-print(f"\nRecommended CSM for the incoming customer is: {recommended_csm}")
+csm_scores_df = portfolio_df.groupby("csm")["bandwidth_score"].sum()
+csm_scores_df = csm_scores_df.reset_index()
+
+print(portfolio_df, "\n") # prints tweaked dataframe of all accounts and their scores
+print(csm_scores_df, "\n")
+# print(f"CSMs\n", csm_info_df, "\n")
