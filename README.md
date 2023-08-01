@@ -3,6 +3,7 @@ Logic to analyze CSM bandwidth and recommend a CSM for any incoming customer bas
 * Current portfolio bandwidth (semi-done, data dependency)
 * Customer language requirements (data dependency)
 * Time zone overlap (data dependency)
+* Industry vertical (done)
 
 App currently takes a CSV output of this report and calculates bandwidth scores for each account based upon license count + customer journey stage bandwidth impact, adds them up for each CSM, and returns a bandwidth score.
 
