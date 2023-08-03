@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <title>CS Bandwidth Tool</title>
+</head>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+    <style>
+        .btn-orange {
+            background-color: orange;
+            color: white;
+        }
+        .input-field {
+            width: 50%;
+            margin: auto;
+        }
+    </style>
+
+    <script>
+        // Show the modal if show_modal is True
+        {% if show_modal == True %}
+            $(document).ready(function() {
+                $('#scoreModal').modal('show');
+            });
+        {% endif %}
+    </script>
+
+    <script>
+        // Show the modal if the recommendation was calculated
+        {% if show_modal_csm == True %}
+            $(document).ready(function() {
+                $("#csmModal").modal('show');
+            });
+        {% endif %}
+    </script>
+<body>
+    <div class="container my-5 text-center">
+        <div class="card border-0 shadow-lg">
+            <div class="card-body rounded">
+                <h1 class="mb-4"><b>CS Bandwidth Calculator</b></h1>
+                <h2 class="mb-4"><b>Step 1:</b> Upload Portfolio CSV</h2>
+                <i>Ensure the CSV file has the following columns:<br> 
+                    CSM, Account Name, # of Licenses, Industry, Customer Journey Stage, Language, Timezone. <br><br>
+                <form method="POST" enctype="multipart/form-data">
+                    {{ UploadCSV.hidden_tag() }}
+                    <div class="d-flex justify-content-center">
+                        <div class="form-group" style="text-align: center;">
+                            <!-- {{ UploadCSV.csv_file.label(class="form-control-label") }} -->
+                            {{ UploadCSV.csv_file(class="form-control-file", style="margin: auto;") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ UploadCSV.submit(class="btn btn-lg btn-orange rounded") }}
+                    </div>
+                </form>
+                <h2 class="mb-4"><b>Step 2:</b> Input the Incoming Customer's Information</h2>
+                <form method="POST">
+                    {{ IncomingCustomer.hidden_tag() }}
+                    <div class="form-group input-field">
+                        {{ IncomingCustomer.cust_name.label(class="form-control-label") }}
+                        {{ IncomingCustomer.cust_name(class="form-control") }}
+                    </div>
+                    <div class="form-group input-field">
+                        {{ IncomingCustomer.cust_language.label(class="form-control-label") }}
+                        {{ IncomingCustomer.cust_language(class="form-control") }}
+                    </div>
+                    <div class="form-group input-field">
+                        {{ IncomingCustomer.cust_timezone.label(class="form-control-label") }}
+                        {{ IncomingCustomer.cust_timezone(class="form-control") }}
+                    </div>
+                    <div class="form-group input-field">
+                        {{ IncomingCustomer.cust_licenses.label(class="form-control-label") }}
+                        {{ IncomingCustomer.cust_licenses(class="form-control") }}
+                    </div>
+                    <div class="form-group input-field">
+                        {{ IncomingCustomer.cust_industry.label(class="form-control-label") }}
+                        {{ IncomingCustomer.cust_industry(class="form-control") }}
+                    </div>
+                    <br><div class="form-group input-field">
+                        {{ IncomingCustomer.submit(class="btn btn-lg btn-orange rounded") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="scoreModal" tabindex="-1" role="dialog" aria-labelledby="scoreModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="scoreModalLabel">CSM Scores</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            <table class="table">
+                {% if recommended_csm is not none %}
+                    <h3>Recommended CSM: {{ recommended_csm }}</h3>
+                {% endif %}
+                <thead>
+                    <tr>
+                        <th>CSM</th>
+                        <th>Bandwidth Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if csm_scores_dict is not none %}
+                    {% for row in csm_scores_dict %}
+                        <tr>
+                            <td>{{ row['csm'] }}</td>
+                            <td>{{ row['bandwidth_score'] }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="csmModal" tabindex="-1" role="dialog" aria-labelledby="csmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="csmModalLabel">Recommended CSM</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+              <p>Based on the provided customer information, we recommend the following CSM:</p>
+              <ul>
+                {% if recommended_csm_dict is not none %}
+                    {% for row in recommended_csm_dict %}
+                    <li><b>Name:</b> {{ row.name }}</li>
+                    <li><b>Language:</b> {{ row.language }}</li>
+                    <li><b>Timezone:</b> {{ row.timezone }}</li>
+                    <li><b>Industry Factor:</b> {{ row.industry_count }}</li>
+                    {% endfor %}
+                {% endif %}
+              </ul>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+</body>
+</html>
