@@ -239,8 +239,6 @@ def index():
         recommended_csm = recommend_csm(cust_language, cust_timezone, cust_industry, csm_info_df, csm_scores_df, portfolio_df)
         recommended_csm_dict = recommended_csm.to_dict(orient='records') # convert recommended CSM to dict
 
-        print(recommended_csm_dict)
-
         show_modal_csm = True
     
     else:
