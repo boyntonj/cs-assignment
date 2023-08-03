@@ -247,6 +247,10 @@ class IncomingCustomer(FlaskForm):
 class UploadCSV(FlaskForm):
     csv_file = FileField('Upload CSV', validators=[DataRequired()])
     submit = SubmitField('Calculate Current Bandwidth')
+
+class CSM_Data(FlaskForm):
+    csv_file = FileField('Upload CSV', validators=[DataRequired()])
+    submit = SubmitField('Import CSM Data')
     
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'abcd'
@@ -256,16 +260,24 @@ app.config['SECRET_KEY'] = 'abcd'
 def index():
     incoming_customer_form = IncomingCustomer()
     upload_csv_form = UploadCSV()
+    upload_csm_data_form = CSM_Data()
+
     show_modal_csm = False
     show_modal = False
 
     ## Initialize variables
     global global_portfolio_df
     global global_csm_scores_df
+    global global_csm_data_df
 
     portfolio_df = csm_scores_df = recommended_csm = recommended_csm_info = recommended_csm_dict = cust_name = cust_language = cust_timezone = None
     cust_licenses = 0
     full_portfolio_df = None
+
+    if upload_csm_data_form.validate_on_submit():
+        csm_data_file = upload_csm_data_form.csv_file.data
+        csm_data_df = pd.read_csv(csm_data_file)
+        global_csm_data_df = csm_data_df
 
     if incoming_customer_form.validate_on_submit():
         cust_name = incoming_customer_form.cust_name.data
@@ -292,6 +304,12 @@ def index():
         
         full_portfolio_df = full_portfolio_df.rename(columns= { ## renames columns to match the formulas below. Just for ease of use
             "Key Domain":"domain",
+            "CSM":"csm",
+            "Account Name":"account",
+            "# of Licenses":"licenses",
+            "Customer Journey Stage":"stage",
+            "Language":"language",
+            "Timezone":"timezone",
             "Account: Account Name":"account", 
             "Postman Team: Postman Team Name":"name", 
             "Account: Industry":"industry", 
