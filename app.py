@@ -58,99 +58,70 @@ def import_csv(file):
 csms = [ ## base info for each CSM, i.e. name, language, timezone
     {
         "name": "Chris O'Hara",
-        "language": "English",
-        "timezone": "UTC-6",
+        "language": "english",
+        "timezone": "ct",
     },
     {
         "name": "Elizabeth Pickel",
-        "language": "English",
-        "timezone": "UTC-5",
+        "language": "english",
+        "timezone": "et",
     },
     {
         "name": "Hannah Bridges",
-        "language": "English",
-        "timezone": "UTC-5",
+        "language": "english",
+        "timezone": "et",
     },
     {
         "name": "Ian Mai",
-        "language": "English",
-        "timezone": "UTC-6",
+        "language": "english",
+        "timezone": "ct",
     },
     {
         "name": "Jeffrey Nadeau",
-        "language": "English",
-        "timezone": "UTC-5",
+        "language": "english",
+        "timezone": "et",
     },
     {
         "name": "John Potts",
-        "language": "English",
-        "timezone": "UTC+0",
+        "language": "english",
+        "timezone": "bst",
     },
     {
         "name": "Josh Trota",
-        "language": "English",
-        "timezone": "UTC-5",
+        "language": "english",
+        "timezone": "et",
     },
     {
         "name": "MK Sullivan",
-        "language": "English",
-        "timezone": "UTC-5",
+        "language": "english",
+        "timezone": "et",
     },
     {
         "name": "Michael Lunzer",
-        "language": "English",
-        "timezone": "UTC-8",
+        "language": "english",
+        "timezone": "pt",
     },
     {
         "name": "Paula Kim",
-        "language": "English",
-        "timezone": "UTC-8",
+        "language": "english",
+        "timezone": "pt",
     },
     {
         "name": "Priyankha B",
-        "language": "English",
-        "timezone": "UTC+5.5",
+        "language": "english",
+        "timezone": "it",
     },
     {
         "name": "Sachin Khalsa",
-        "language": "English",
-        "timezone": "UTC-5",
+        "language": "english",
+        "timezone": "et",
     },
     {
         "name": "Tony Cina",
-        "language": "English",
-        "timezone": "UTC-5",
+        "language": "english",
+        "timezone": "et",
     }
 ]
-
-time_zones = {
-    "UTC-10": "Hawaii (UTC-10)",
-    "UTC-9": "Alaska (UTC-9)",
-    "UTC-8": "Pacific Time (US & Canada) (UTC-8)",
-    "UTC-7": "Mountain Standard Time (UTC-7)",
-    "UTC-6": "Central Standard Time (UTC-6)",
-    "UTC-5": "Eastern Standard Time (UTC-5)",
-    "UTC-4": "Atlantic Standard Time (UTC-4)",
-    "UTC-3": "Greenland Standard Time (UTC-3)",
-    "UTC-2": "Fernando de Noronha Time (UTC-2)",
-    "UTC-1": "Azores Standard Time (UTC-1)",
-    "UTC+0": "Greenwich Mean Time (UTC+0)",
-    "UTC+1": "Central European Time (UTC+1)",
-    "UTC+2": "Eastern European Time (UTC+2)",
-    "UTC+3": "Moscow Standard Time (UTC+3)",
-    "UTC+4": "Samara Standard Time (UTC+4)",
-    "UTC+5": "Pakistan Standard Time (UTC+5)",
-    "UTC+5.5": "Indian Standard Time (UTC+5:30)",
-    "UTC+6": "Bangladesh Standard Time (UTC+6)",
-    "UTC+7": "Indochina Time (UTC+7)",
-    "UTC+8": "China Standard Time (UTC+8)",
-    "UTC+9": "Japan Standard Time (UTC+9)",
-    "UTC+10": "Australian Eastern Standard Time (UTC+10)",
-    "UTC+11": "Vanuatu Standard Time (UTC+11)",
-    "UTC+12": "Fiji Time (UTC+12)",
-}
-
-time_zone_choices = [(k, v) if not isinstance(v, list) else (k, ', '.join(v)) for k, v in time_zones.items()]
 
 csm_info_df = pd.DataFrame(csms) ## creates dataframe from base info from each CSM, i.e. name, language, timezone
 
@@ -170,17 +141,8 @@ def get_csm_language(csm):
         
 def recommend_csm(cust_language, cust_timezone, cust_industry, csm_info_df, csm_scores_df, portfolio_df):
 
-    # Convert the customer timezone to numerical format (excluding "UTC")
-    cust_timezone = float(cust_timezone.replace('UTC', ''))
-
     # Filter CSMs that speak the same language as the customer
     possible_csms = csm_info_df[csm_info_df['language'] == cust_language]
-
-    # Convert CSMs' timezone to numerical format (excluding "UTC") and calculate the difference
-    possible_csms['timezone_diff'] = possible_csms['timezone'].apply(lambda x: abs(float(x.replace('UTC', '')) - cust_timezone))
-
-    # Filter CSMs that are within 3 timezones of the customer
-    possible_csms = possible_csms[possible_csms['timezone_diff'] <= 3]
 
     # Join the possible CSMs with their bandwidth scores
     possible_csms = possible_csms.merge(csm_scores_df, left_on='name', right_on='csm')
@@ -208,38 +170,35 @@ def recommend_csm(cust_language, cust_timezone, cust_industry, csm_info_df, csm_
 
 class IncomingCustomer(FlaskForm):
     cust_name = StringField('Customer Name', validators=[DataRequired()])
-    cust_language = SelectField('Spoken Language', choices=[('English', 'English'), 
-                                                     ('Spanish', 'Spanish'), 
-                                                     ('French', 'French'), 
-                                                     ('German', 'German'), 
-                                                     ('Portuguese', 'Portuguese'), 
-                                                     ('Italian', 'Italian'), 
-                                                     ('Hapanese', 'Japanese'), 
-                                                     ('Korean', 'Korean'), 
-                                                     ('Chinese', 'Chinese'), 
-                                                     ('Hebrew', 'Hebrew'), 
-                                                     ('Arabic', 'Arabic')], 
+    cust_language = SelectField('Spoken Language', choices=[('english', 'English'), 
+                                                     ('spanish', 'Spanish'), 
+                                                     ('french', 'French'), 
+                                                     ('german', 'German'), 
+                                                     ('portuguese', 'Portuguese'), 
+                                                     ('italian', 'Italian'), 
+                                                     ('japanese', 'Japanese'), 
+                                                     ('korean', 'Korean'), 
+                                                     ('chinese', 'Chinese'), 
+                                                     ('hebrew', 'Hebrew'), 
+                                                     ('arabic', 'Arabic')], 
                                                      validators=[DataRequired()])
-    cust_timezone = SelectField('Timezone', choices=time_zone_choices, validators=[DataRequired()])
-                                                    # [
-                                                    #  ('et', 'US-East'), 
-                                                    #  ('ct', 'US-Central'), 
-                                                    #  ('mt', 'US-Mountain'), 
-                                                    #  ('pt', 'US-Pacific'), 
-                                                    #  ('hst', 'US-Hawaii'), 
-                                                    #  ('akst', 'US-Alaska'), 
-                                                    #  ('bst', 'UK'), 
-                                                    #  ('cest', 'Europe'), 
-                                                    #  ('aet', 'Austraila-East'),  
-                                                    #  ('act', 'Australia-Central'), 
-                                                    #  ('awt', 'Australia-West'), 
-                                                    #  ('it', 'India'), 
-                                                    #  ('sgt', 'Singapore'), 
-                                                    #  ('hkt', 'Hong Kong'), 
-                                                    #  ('jst', 'Japan'), 
-                                                    #  ('nzt', 'New Zealand Daylight Time')
-                                                    #  ], 
-                                                    #  validators=[DataRequired()])
+    cust_timezone = SelectField('Timezone', choices=[('et', 'US-East'), 
+                                                     ('ct', 'US-Central'), 
+                                                     ('mt', 'US-Mountain'), 
+                                                     ('pt', 'US-Pacific'), 
+                                                     ('hst', 'US-Hawaii'), 
+                                                     ('akst', 'US-Alaska'), 
+                                                     ('bst', 'UK'), 
+                                                     ('cest', 'Europe'), 
+                                                     ('aet', 'Austraila-East'),  
+                                                     ('act', 'Australia-Central'), 
+                                                     ('awt', 'Australia-West'), 
+                                                     ('it', 'India'), 
+                                                     ('sgt', 'Singapore'), 
+                                                     ('hkt', 'Hong Kong'), 
+                                                     ('jst', 'Japan'), 
+                                                     ('nzt', 'New Zealand Daylight Time')], 
+                                                     validators=[DataRequired()])
     cust_licenses = IntegerField('# of Licenses', validators=[DataRequired(), NumberRange(min=1, max=100000, message='Must be greater than 0')])
     cust_industry = StringField('Industry', validators=[DataRequired()])
     submit = SubmitField('Get CSM Assignment')
