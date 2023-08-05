@@ -1,169 +1,472 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-    <!-- Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
 
-    <title>CS Bandwidth Tool</title>
+  <title>CS Bandwidth Tool</title>
 </head>
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    
-    <style>
-        .btn-orange {
-            background-color: orange;
-            color: white;
-        }
-        .input-field {
-            width: 50%;
-            margin: auto;
-        }
-    </style>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-    <script>
-        // Show the modal if show_modal is True
-        {% if show_modal == True %}
-            $(document).ready(function() {
-                $('#scoreModal').modal('show');
-            });
-        {% endif %}
-    </script>
+<style>
+  .modal-title {
+    font-weight: bold;
+    align-items: center;
+    align-self: center;
+  }
 
-    <script>
-        // Show the modal if the recommendation was calculated
-        {% if show_modal_csm == True %}
-            $(document).ready(function() {
-                $("#csmModal").modal('show');
-            });
-        {% endif %}
-    </script>
+  .btn-orange {
+    background-color: orange;
+    color: white;
+  }
+
+  .input-field {
+    width: 50%;
+    margin: auto;
+  }
+
+  /* Additional custom styles */
+
+  table {
+    border-collapse: collapse;
+    border-radius: 10px;
+    /* Rounded corners for the table */
+    overflow: hidden;
+    /* Hide any content that overflows the rounded corners */
+    background-color: #f0f0f0;
+    /* Background color for the table */
+    border: 3px solid #f0f0f0;
+    /* Thicker border with the same color as the background */
+    min-width: 444px;
+  }
+
+  .spreadsheet-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 0px;
+    /* Adjust the margin as needed */
+  }
+
+  .button-container label {
+    margin: 0 2px;
+    /* Add 5px horizontal margin between buttons */
+    display: inline-block;
+    /* Set the display to inline-block */
+  }
+
+  .button-container button {
+    margin: 0 2px;
+    /* Add 5px horizontal margin between buttons */
+  }
+
+  td,
+  th {
+    border: 1px solid black;
+    padding: 5px;
+  }
+
+  td:first-child,
+  th:first-child {
+    font-weight: bold;
+  }
+
+  body {
+    font-family: "Arial", sans-serif;
+    /* Use a sans-serif font for the entire page */
+  }
+
+  .btn-orange {
+    background-color: orange;
+    color: white;
+  }
+
+  .input-field {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+
+<script>
+  // Show the modal if show_modal is True
+  {% if show_modal == True %}
+  $(document).ready(function () {
+    $('#scoreModal').modal('show');
+  });
+  {% endif %}
+
+  // Show the modal if show_modal_csm is True
+  {% if show_modal_csm == True %}
+  $(document).ready(function () {
+    $("#csmModal").modal('show');
+  });
+  {% endif %}
+</script>
+
 <body>
-    <div class="container my-5 text-center">
-        <div class="card border-0 shadow-lg">
-            <div class="card-body rounded">
-                <h1 class="mb-4"><b>CS Bandwidth Calculator</b></h1>
-                <h2 class="mb-4"><b>Step 1:</b> Upload Portfolio CSV</h2>
-                <i>Ensure the CSV file has the following columns:<br> 
-                    CSM, Account Name, # of Licenses, Industry, Customer Journey Stage, Language, Timezone. <br><br>
-                <form method="POST" enctype="multipart/form-data">
-                    {{ UploadCSV.hidden_tag() }}
-                    <div class="d-flex justify-content-center">
-                        <div class="form-group" style="text-align: center;">
-                            <!-- {{ UploadCSV.csv_file.label(class="form-control-label") }} -->
-                            {{ UploadCSV.csv_file(class="form-control-file", style="margin: auto;") }}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        {{ UploadCSV.submit(class="btn btn-lg btn-orange rounded") }}
-                    </div>
-                </form>
-                <h2 class="mb-4"><b>Step 2:</b> Input the Incoming Customer's Information</h2>
-                <form method="POST">
-                    {{ IncomingCustomer.hidden_tag() }}
-                    <div class="form-group input-field">
-                        {{ IncomingCustomer.cust_name.label(class="form-control-label") }}
-                        {{ IncomingCustomer.cust_name(class="form-control") }}
-                    </div>
-                    <div class="form-group input-field">
-                        {{ IncomingCustomer.cust_language.label(class="form-control-label") }}
-                        {{ IncomingCustomer.cust_language(class="form-control") }}
-                    </div>
-                    <div class="form-group input-field">
-                        {{ IncomingCustomer.cust_timezone.label(class="form-control-label") }}
-                        {{ IncomingCustomer.cust_timezone(class="form-control") }}
-                    </div>
-                    <div class="form-group input-field">
-                        {{ IncomingCustomer.cust_licenses.label(class="form-control-label") }}
-                        {{ IncomingCustomer.cust_licenses(class="form-control") }}
-                    </div>
-                    <div class="form-group input-field">
-                        {{ IncomingCustomer.cust_industry.label(class="form-control-label") }}
-                        {{ IncomingCustomer.cust_industry(class="form-control") }}
-                    </div>
-                    <br><div class="form-group input-field">
-                        {{ IncomingCustomer.submit(class="btn btn-lg btn-orange rounded") }}
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+  <div class="container my-5 text-center">
+    <div class="card border-0 shadow-lg">
+      <div class="card-body rounded">
+        <h1 class="mb-4"><b>CS Bandwidth Calculator</b></h1>
+        <h2 class="mb-4"><b>Step 1:</b> Populate CSM Information</h2>
+        <i>Please enter the CSM name, timezone, and language information below
+          (or upload a CSV)</i><br /><br />
 
-    <!-- Modal -->
-    <div class="modal fade" id="scoreModal" tabindex="-1" role="dialog" aria-labelledby="scoreModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="scoreModalLabel">CSM Scores</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-            <div class="modal-body">
-            <table class="table">
-                {% if recommended_csm is not none %}
-                    <h3>Recommended CSM: {{ recommended_csm }}</h3>
-                {% endif %}
-                <thead>
-                    <tr>
-                        <th>CSM</th>
-                        <th>Bandwidth Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% if csm_scores_dict is not none %}
-                    {% for row in csm_scores_dict %}
-                        <tr>
-                            <td>{{ row['csm'] }}</td>
-                            <td>{{ row['bandwidth_score'] }}</td>
-                        </tr>
-                    {% endfor %}
-                {% endif %}
-                </tbody>
-            </table>
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
+        <div class="spreadsheet-container">
+          <table>
+            <tr>
+              <th>CSM Name</th>
+              <th>Timezone</th>
+              <th>Language</th>
+            </tr>
+            <tr>
+              <td contenteditable="true">Jared Boynton</td>
+              <td contenteditable="true" id="cell-1-1">UTC-5</td>
+              <td contenteditable="true" id="cell-1-2">English</td>
+            </tr>
+            <tr>
+              <td contenteditable="true">CSM 2</td>
+              <td contenteditable="true" id="cell-2-1">UTC-7</td>
+              <td contenteditable="true" id="cell-2-2">French</td>
+            </tr>
+          </table>
         </div>
-        </div>
-    </div>
+        <br />
 
-    <div class="modal fade" id="csmModal" tabindex="-1" role="dialog" aria-labelledby="csmModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="csmModalLabel">Recommended CSM</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-            <div class="modal-body">
-              <p>Based on the provided customer information, we recommend the following CSM:</p>
-              <ul>
-                {% if recommended_csm_dict is not none %}
-                    {% for row in recommended_csm_dict %}
-                    <li><b>Name:</b> {{ row.name }}</li>
-                    <li><b>Language:</b> {{ row.language }}</li>
-                    <li><b>Timezone:</b> {{ row.timezone }}</li>
-                    <li><b>Industry Factor:</b> {{ row.industry_count }}</li>
-                    {% endfor %}
-                {% endif %}
-              </ul>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <div class="button-container">
+          <button class="btn btn-orange" onclick="addRow()">Add (+)</button>
+          <button class="btn btn-orange" onclick="removeRow()">
+            Remove (-)
+          </button>
+          <input type="file" id="csvFileInput" accept=".csv" style="display: none" />
+          <label for="csvFileInput" class="btn btn-orange">Upload CSV</label>
+          <button class="btn btn-orange" onclick="submitData()">
+            Submit
+          </button>
+        </div>
+
+        <script>
+          // 2D array to store the cell data
+          const data = [
+            ["", "", ""],
+            ["", "", ""],
+          ];
+
+          // Event listener to capture cell selection and data input
+          document
+            .querySelectorAll('td[contenteditable="true"]')
+            .forEach((cell) => {
+              cell.addEventListener("input", handleCellInput);
+            });
+
+          function handleCellInput(event) {
+            const cell = event.target;
+            const row = cell.parentElement.rowIndex - 1;
+            const col = cell.cellIndex - 1;
+            const value = cell.innerText;
+
+            // Update the data array with the new value
+            data[row][col] = value;
+
+            // You can store the data to local storage or perform other operations here
+            // For simplicity, we'll just log the data to the console for now
+            console.log("Data:", data);
+          }
+
+          function addRow() {
+            const table = document.querySelector("table");
+            const newRow = table.insertRow();
+            const rowCount = table.rows.length;
+
+            // Add the new row to the data array
+            data.push(["", "", ""]);
+
+            // Create cells for the new row and set the "contenteditable" attribute
+            for (let i = 0; i < data[0].length; i++) {
+              const cell = newRow.insertCell();
+              cell.contentEditable = true;
+              cell.id = `cell-${rowCount}-${i + 1}`;
+            }
+          }
+
+          function removeRow() {
+            const table = document.querySelector("table");
+            const rowCount = table.rows.length;
+
+            // Ensure that there's at least one row (excluding the header row) before removing
+            if (rowCount > 2) {
+              // Remove the last row from the table
+              table.deleteRow(rowCount - 1);
+
+              // Remove the last row data from the data array
+              data.pop();
+
+              // You can update the data array as needed here
+              // For simplicity, we're only removing the last row in this example
+
+              // Log the updated data to the console
+              console.log("Updated Data:", data);
+            } else {
+              console.log(
+                "Cannot remove the last row. There should be at least one row."
+              );
+            }
+          }
+
+          function get_data() {
+            var table = document.querySelector("table");
+            var data = [];
+            for (var i = 0, row; (row = table.rows[i]); i++) {
+              //iterate through rows
+              //rows would be accessed using the "row" variable assigned in the for loop
+              // Get the row data
+              const rowData = [];
+              for (let j = 0; j < row.cells.length; j++) {
+                rowData.push(row.cells[j].innerText);
+              }
+              // Add the row data to the data array
+              data.push(rowData);
+            }
+            return data;
+          }
+
+          function submitData() {
+            // Serialize the data to JSON
+            const data = get_data();
+            const jsonData = JSON.stringify(data);
+            console.log(data);
+
+            // Make an HTTP POST request to the Flask app
+            fetch("/submit-csms", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: jsonData,
+            })
+              .then((response) => {
+                if (response.ok) {
+                  console.log("Data successfully sent to the Flask app!");
+                  console.log(jsonData);
+                } else {
+                  console.log("Failed to send data to the Flask app.");
+                }
+              })
+              .catch((error) => {
+                console.error("Error occurred while sending data:", error);
+              });
+          }
+
+          document
+            .getElementById("csvFileInput")
+            .addEventListener("change", handleFileUpload);
+
+          function handleFileUpload(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+              const contents = e.target.result;
+              processDataFromCSV(contents);
+            };
+
+            reader.readAsText(file);
+          }
+
+          function processDataFromCSV(csvData) {
+            const rows = csvData.split("\n");
+            const table = document.querySelector("table");
+
+            // Remove existing rows (excluding the header row)
+            while (table.rows.length > 1) {
+              table.deleteRow(1);
+              data.pop();
+            }
+
+            // Populate the table and data array from the CSV
+            rows.forEach((row, rowIndex) => {
+              const rowData = row.split(",");
+              const newRow = table.insertRow();
+              data.push(rowData);
+
+              rowData.forEach((cellData, colIndex) => {
+                const cell = newRow.insertCell();
+                cell.contentEditable = true;
+                cell.innerText = cellData;
+                cell.id = `cell-${rowIndex + 1}-${colIndex + 1}`;
+              });
+            });
+
+            // Log the data to the console
+            console.log("Populated Data:", data);
+          }
+        </script>
+        <br />
+
+        <h2 class="mb-4"><b>Step 2:</b> Upload Account Portfolio CSV</h2>
+        <i>Ensure the CSV file has the following columns:<br />
+          CSM, Account Name, # of Licenses, Industry, Customer Journey Stage,
+          Language, Timezone.</i>
+        <br /><br />
+
+        {% if num_records > 0 %}
+        <div class="d-flex justify-content-center" id="import_success_message">
+          <p>{{ num_records }} records have been imported.</p>
+        </div>
+        {% endif %}
+
+
+        <form method="POST" enctype="multipart/form-data" id="upload_portfolio_form">
+          {{ UploadCSV.hidden_tag() }}
+          <div class="d-flex justify-content-center">
+            <div class="form-group" style="text-align: center">
+              <!-- {{ UploadCSV.csv_file.label(class="form-control-label") }} -->
+              {{ UploadCSV.csv_file(class="form-control-file", style="margin:
+              auto;") }}
             </div>
           </div>
+          <div class="form-group">
+            {{ UploadCSV.submit(class="btn btn-lg btn-orange rounded", id="submit_portfolio_form") }}
+          </div>
+        </form>
+
+        <h2 class="mb-4">
+          <b>Step 3:</b> Input the Incoming Customer's Information
+        </h2>
+        <form method="POST">
+          {{ IncomingCustomer.hidden_tag() }}
+          <div class="form-group input-field">
+            {{ IncomingCustomer.cust_name.label(class="form-control-label") }}
+            {{ IncomingCustomer.cust_name(class="form-control") }}
+          </div>
+          <div class="form-group input-field">
+            {{
+            IncomingCustomer.cust_language.label(class="form-control-label")
+            }} {{ IncomingCustomer.cust_language(class="form-control") }}
+          </div>
+          <div class="form-group input-field">
+            {{
+            IncomingCustomer.cust_timezone.label(class="form-control-label")
+            }} {{ IncomingCustomer.cust_timezone(class="form-control") }}
+          </div>
+          <div class="form-group input-field">
+            {{
+            IncomingCustomer.cust_licenses.label(class="form-control-label")
+            }} {{ IncomingCustomer.cust_licenses(class="form-control") }}
+          </div>
+          <div class="form-group input-field">
+            {{
+            IncomingCustomer.cust_industry.label(class="form-control-label")
+            }} {{ IncomingCustomer.cust_industry(class="form-control") }}
+          </div>
+          <br />
+          <div class="form-group input-field">
+            {{ IncomingCustomer.submit(class="btn btn-lg btn-orange rounded", id="submit_incoming_customer")
+            }}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="scoreModal" tabindex="-1" role="dialog" aria-labelledby="scoreModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="scoreModalLabel">CSM Scores</h3>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <table class="table">
+            {% if recommended_csm is not none %}
+            <div style="text-align: center">
+              <i style="font-size: smaller">The bandwidth scores below have been calculated based upon
+                Customer Journey stage weights. {{ recommended_csm }}</i>
+            </div>
+            <br />
+            {% endif %}
+            <thead>
+              <tr>
+                <th>CSM</th>
+                <th>Bandwidth Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if csm_scores_dict is not none %} {% for row in
+              csm_scores_dict %}
+              <tr>
+                <td>{{ row['csm'] }}</td>
+                <td>{{ row['bandwidth_score'] }}</td>
+              </tr>
+              {% endfor %} {% endif %}
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
         </div>
       </div>
+    </div>
+  </div>
 
-
+  <div class="modal fade" id="csmModal" tabindex="-1" role="dialog" aria-labelledby="csmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="csmModalLabel">Recommended CSM</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Based on the provided customer information, we recommend the
+            following CSM:
+          </p>
+          <ul>
+            {% if recommended_csm_dict is not none %} {% for row in
+            recommended_csm_dict %}
+            <li><b>Name:</b> {{ row.name }}</li>
+            <li><b>Language:</b> {{ row.language }}</li>
+            <li><b>Timezone:</b> {{ row.timezone }}</li>
+            <li><b>Industry Factor:</b> {{ row.industry_count }}</li>
+            {% endfor %}
+            {% endif %}
+            {% if show_no_csms_message == true %}
+            <i>There are no CSMs available to take on this customer.</i>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
+
+
 </html>

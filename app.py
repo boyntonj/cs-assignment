@@ -170,6 +170,9 @@ def get_csm_language(csm):
         
 def recommend_csm(cust_language, cust_timezone, cust_industry, csm_info_df, csm_scores_df, portfolio_df):
 
+    if 'csms' in session:
+        csm_info_df = pd.DataFrame(session['csms']).copy()
+
     # Convert the customer timezone to numerical format (excluding "UTC")
     cust_timezone = float(cust_timezone.replace('UTC', ''))
 
@@ -181,7 +184,7 @@ def recommend_csm(cust_language, cust_timezone, cust_industry, csm_info_df, csm_
 
     # Filter CSMs that are within 3 timezones of the customer
     possible_csms = possible_csms[possible_csms['timezone_diff'] <= 3]
-
+    
     # Join the possible CSMs with their bandwidth scores
     possible_csms = possible_csms.merge(csm_scores_df, left_on='name', right_on='csm')
 
@@ -251,17 +254,34 @@ class UploadCSV(FlaskForm):
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'abcd'
 
+@app.route('/submit-csms', methods=['POST'])
+def submit_data():
+    csm_temp = request.json  # Get the JSON data from the request body
+    # Remove column titles (if present) from the JSON data
+    csm_temp_no_titles = [row for row in csm_temp if row[0] != 'CSM Name']
+    # Process the data as needed, e.g., save it to a database, perform calculations, etc.
+    csm_temp_df = pd.DataFrame(csm_temp_no_titles, columns=['name', 'timezone', 'language'])
+
+    session['csms'] = csm_temp_df.to_dict(orient='records')
+
+    print('Received Data:', session["csms"])
+    return 'Data received successfully', 200
+
 @app.route('/', methods=['GET', 'POST'])
 
 def index():
+    if 'csms' in session:
+        csm_info_df = pd.DataFrame(session['csms'])
     incoming_customer_form = IncomingCustomer()
     upload_csv_form = UploadCSV()
     show_modal_csm = False
     show_modal = False
+    show_no_csms_message = False
 
     ## Initialize variables
     global global_portfolio_df
     global global_csm_scores_df
+    num_records = 0
 
     portfolio_df = csm_scores_df = recommended_csm = recommended_csm_info = recommended_csm_dict = cust_name = cust_language = cust_timezone = None
     cust_licenses = 0
@@ -278,6 +298,9 @@ def index():
         csm_scores_df = global_csm_scores_df
         
         recommended_csm = recommend_csm(cust_language, cust_timezone, cust_industry, csm_info_df, csm_scores_df, portfolio_df)
+        if recommended_csm.empty:
+            # print('No CSMs available')
+            show_no_csms_message = True
         recommended_csm_dict = recommended_csm.to_dict(orient='records') # convert recommended CSM to dict
 
         show_modal_csm = True
@@ -313,6 +336,7 @@ def index():
 
         ## pull the columns we need from the full portfolio dataframe
         portfolio_df = full_portfolio_df[["csm", "domain", "stage", "licenses", "industry", "language", "timezone"]]
+        num_records = len(portfolio_df.index) ## get the number of records in the portfolio dataframe
 
         ## do the calculations for the bandwidth score and store them in the dataframe
         portfolio_df["band_weight"] = portfolio_df["licenses"].apply(get_license_band_weight) 
@@ -336,7 +360,7 @@ def index():
         csm_scores_dict = None
 
     # pass the variables to the web app
-    return render_template('index.html', recommended_csm_dict=recommended_csm_dict, recommended_csm_info=recommended_csm_info, csm_scores_dict=csm_scores_dict, show_modal=show_modal, show_modal_csm=show_modal_csm, IncomingCustomer=incoming_customer_form, cust_name=cust_name, cust_language=cust_language, cust_timezone=cust_timezone, cust_licenses=cust_licenses, csm_scores_df=csm_scores_df, csm_info_df=csm_info_df, portfolio_df=portfolio_df, full_portfolio_df=full_portfolio_df, UploadCSV=upload_csv_form)
+    return render_template('index.html', show_no_csms_message=show_no_csms_message, num_records=num_records, recommended_csm_dict=recommended_csm_dict, recommended_csm_info=recommended_csm_info, csm_scores_dict=csm_scores_dict, show_modal=show_modal, show_modal_csm=show_modal_csm, IncomingCustomer=incoming_customer_form, cust_name=cust_name, cust_language=cust_language, cust_timezone=cust_timezone, cust_licenses=cust_licenses, csm_scores_df=csm_scores_df, csm_info_df=csm_info_df, portfolio_df=portfolio_df, full_portfolio_df=full_portfolio_df, UploadCSV=upload_csv_form)
     
 if __name__ == "__main__":
     app.run(debug=False)
