@@ -9,7 +9,7 @@
   <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
 
-  <title>CS Bandwidth Tool</title>
+  <title>BetterRR</title>
 </head>
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -87,8 +87,20 @@
   }
 
   body {
-    font-family: "Arial", sans-serif;
+    font-family: "Inter", sans-serif;
+    color: grey;
     /* Use a sans-serif font for the entire page */
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Inter", sans-serif;
+    color: black;
+    /* Use a sans-serif font for headings */
   }
 
   .btn-orange {
@@ -122,17 +134,62 @@
   <div class="container my-5 text-center">
     <div class="card border-0 shadow-lg">
       <div class="card-body rounded">
-        <h1 class="mb-4"><b>CS Bandwidth Calculator</b></h1>
-        <h2 class="mb-4"><b>Step 1:</b> Populate CSM Information</h2>
-        <i>Please enter the CSM name, timezone, and language information below
-          (or upload a CSV)</i><br /><br />
+        <h1 class="mb-4"><b>BetterRR</b> <span style="color:rgb(255, 102, 0)"> Better Round Robin</span></h1>
+        Assign accounts to your customer success team members based on bandwidth, language, industry, and time zone
+        coverage.<br>Let's begin!<br><br>
+        <span style="font-size: 44px">↓</span><br /><br />
+
+
+        <h2 class="mb-4"><b>Step 1:</b> Calculate Current Bandwidth</h2>
+        <b>Click "Choose File" and locate the CSV on your local machine, then click "Submit".</b><br><br>
+        Ensure the CSV file has the following columns:<br />
+        CSM, Account Name, # of Licenses, Industry, Customer Journey Stage,
+        Language, Timezone.
+        <br /><br />
+
+        {% if num_records > 0 %}
+        <div class="d-flex justify-content-center" id="import_success_message">
+          <p>{{ num_records }} records have been imported.</p>
+        </div>
+        {% endif %}
+
+
+        <form method="POST" enctype="multipart/form-data" id="upload_portfolio_form">
+          {{ UploadCSV.hidden_tag() }}
+          <div class="d-flex justify-content-center">
+            <div class="form-group" style="text-align: center">
+              <!-- {{ UploadCSV.csv_file.label(class="form-control-label") }} -->
+              {{ UploadCSV.csv_file(class="form-control-file", style="margin:
+              auto;") }}
+            </div>
+          </div>
+          <br />
+          <div class="form-group">
+            {{ UploadCSV.submit(class="btn btn-lg btn-orange rounded", id="submit_portfolio_form") }}
+          </div>
+        </form>
+        <span style="font-size: 44px">↓</span>
+        <br /> <br />
+
+
+        <h2 class="mb-4"><b>Step 2:</b> Populate CSM Information</h2>
+        <b>Enter your team members' names, timezones, and language information below
+          (or upload a CSV) and click Submit.</b><br /><br />
+        <span style="color: red">Please ensure all CSMs assigned accounts in the portfolio submitted in Step 1 are
+          reflected in <br />
+          this table before clicking <b>Submit</b> progressing to step 3.<br />
+
+        </span>
+        <br /><br />
 
         <div class="spreadsheet-container">
           <table>
             <tr>
-              <th>CSM Name</th>
-              <th>Timezone</th>
-              <th>Language</th>
+
+              <th><span style="color: black">CSM Name</span></th>
+              <th><span style="color: black">Timezone</span></th>
+              <th><span style="color: black">Language</span></th>
+
             </tr>
             <tr>
               <td contenteditable="true">Jared Boynton</td>
@@ -159,6 +216,8 @@
             Submit
           </button>
         </div>
+
+        <br /><span style="font-size: 44px">↓</span><br />
 
         <script>
           // 2D array to store the cell data
@@ -318,36 +377,10 @@
         </script>
         <br />
 
-        <h2 class="mb-4"><b>Step 2:</b> Upload Account Portfolio CSV</h2>
-        <i>Ensure the CSV file has the following columns:<br />
-          CSM, Account Name, # of Licenses, Industry, Customer Journey Stage,
-          Language, Timezone.</i>
-        <br /><br />
-
-        {% if num_records > 0 %}
-        <div class="d-flex justify-content-center" id="import_success_message">
-          <p>{{ num_records }} records have been imported.</p>
-        </div>
-        {% endif %}
-
-
-        <form method="POST" enctype="multipart/form-data" id="upload_portfolio_form">
-          {{ UploadCSV.hidden_tag() }}
-          <div class="d-flex justify-content-center">
-            <div class="form-group" style="text-align: center">
-              <!-- {{ UploadCSV.csv_file.label(class="form-control-label") }} -->
-              {{ UploadCSV.csv_file(class="form-control-file", style="margin:
-              auto;") }}
-            </div>
-          </div>
-          <div class="form-group">
-            {{ UploadCSV.submit(class="btn btn-lg btn-orange rounded", id="submit_portfolio_form") }}
-          </div>
-        </form>
-
         <h2 class="mb-4">
-          <b>Step 3:</b> Input the Incoming Customer's Information
+          <b>Step 3:</b> Assign an Incoming Account
         </h2>
+        <b>Provide the inbound customer's details to calculate an assignment recommendation.</b><br /><br />
         <form method="POST">
           {{ IncomingCustomer.hidden_tag() }}
           <div class="form-group input-field">
