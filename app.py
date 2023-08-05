@@ -55,73 +55,73 @@ def import_csv(file):
         df = pd.read_csv(file, encoding='iso-8859-1')
         return df
 
-csms = [ ## base info for each CSM, i.e. name, language, timezone
-    {
-        "name": "Chris O'Hara",
-        "language": "English",
-        "timezone": "UTC-6",
-    },
-    {
-        "name": "Elizabeth Pickel",
-        "language": "English",
-        "timezone": "UTC-5",
-    },
-    {
-        "name": "Hannah Bridges",
-        "language": "English",
-        "timezone": "UTC-5",
-    },
-    {
-        "name": "Ian Mai",
-        "language": "English",
-        "timezone": "UTC-6",
-    },
-    {
-        "name": "Jeffrey Nadeau",
-        "language": "English",
-        "timezone": "UTC-5",
-    },
-    {
-        "name": "John Potts",
-        "language": "English",
-        "timezone": "UTC+0",
-    },
-    {
-        "name": "Josh Trota",
-        "language": "English",
-        "timezone": "UTC-5",
-    },
-    {
-        "name": "MK Sullivan",
-        "language": "English",
-        "timezone": "UTC-5",
-    },
-    {
-        "name": "Michael Lunzer",
-        "language": "English",
-        "timezone": "UTC-8",
-    },
-    {
-        "name": "Paula Kim",
-        "language": "English",
-        "timezone": "UTC-8",
-    },
-    {
-        "name": "Priyankha B",
-        "language": "English",
-        "timezone": "UTC+5.5",
-    },
-    {
-        "name": "Sachin Khalsa",
-        "language": "English",
-        "timezone": "UTC-5",
-    },
-    {
-        "name": "Tony Cina",
-        "language": "English",
-        "timezone": "UTC-5",
-    }
-]
+# csms = [ ## base info for each CSM, i.e. name, language, timezone
+#     {
+#         "name": "Chris O'Hara",
+#         "language": "English",
+#         "timezone": "UTC-6",
+#     },
+#     {
+#         "name": "Elizabeth Pickel",
+#         "language": "English",
+#         "timezone": "UTC-5",
+#     },
+#     {
+#         "name": "Hannah Bridges",
+#         "language": "English",
+#         "timezone": "UTC-5",
+#     },
+#     {
+#         "name": "Ian Mai",
+#         "language": "English",
+#         "timezone": "UTC-6",
+#     },
+#     {
+#         "name": "Jeffrey Nadeau",
+#         "language": "English",
+#         "timezone": "UTC-5",
+#     },
+#     {
+#         "name": "John Potts",
+#         "language": "English",
+#         "timezone": "UTC+0",
+#     },
+#     {
+#         "name": "Josh Trota",
+#         "language": "English",
+#         "timezone": "UTC-5",
+#     },
+#     {
+#         "name": "MK Sullivan",
+#         "language": "English",
+#         "timezone": "UTC-5",
+#     },
+#     {
+#         "name": "Michael Lunzer",
+#         "language": "English",
+#         "timezone": "UTC-8",
+#     },
+#     {
+#         "name": "Paula Kim",
+#         "language": "English",
+#         "timezone": "UTC-8",
+#     },
+#     {
+#         "name": "Priyankha B",
+#         "language": "English",
+#         "timezone": "UTC+5.5",
+#     },
+#     {
+#         "name": "Sachin Khalsa",
+#         "language": "English",
+#         "timezone": "UTC-5",
+#     },
+#     {
+#         "name": "Tony Cina",
+#         "language": "English",
+#         "timezone": "UTC-5",
+#     }
+# ]
 
 time_zones = {
     "UTC-10": "Hawaii (UTC-10)",
@@ -152,7 +152,7 @@ time_zones = {
 
 time_zone_choices = [(k, v) if not isinstance(v, list) else (k, ', '.join(v)) for k, v in time_zones.items()]
 
-csm_info_df = pd.DataFrame(csms) ## creates dataframe from base info from each CSM, i.e. name, language, timezone
+# csm_info_df = pd.DataFrame(csms) ## creates dataframe from base info from each CSM, i.e. name, language, timezone
 
 def get_cust_bandwidth_score(row):
     score = get_stage_weight(row["stage"]) * get_license_band_weight(row["licenses"])
@@ -272,6 +272,8 @@ def submit_data():
 def index():
     if 'csms' in session:
         csm_info_df = pd.DataFrame(session['csms'])
+    else:
+        csm_info_df = pd.DataFrame(columns=['name', 'timezone', 'language'])
     incoming_customer_form = IncomingCustomer()
     upload_csv_form = UploadCSV()
     show_modal_csm = False
