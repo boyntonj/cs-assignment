@@ -24,22 +24,6 @@ license_bands = { ## weight for each license count band
     range(1000, 9999999): 2.5,
 }
 
-timezones = {
-    "US-East": [-5, -4],
-    "US-West": [-8, -7],
-    "US-Central": [-6, -5],
-    "US-Mountain": [-7, -6],
-    "EU-West": [0, 1],
-    "EU-Central": [1, 2],
-    "EU-East": [2, 3],
-    "Australia-West": [8, 9],
-    "Australia-Central": [9, 10],
-    "Australia-East": [10, 11],
-    "India": [5.5, 6.5],
-    "Japan": [9, 10],
-    "China": [8, 9],
-}
-
 def get_license_band_weight(licenses):
     for band, weight in license_bands.items():
         if licenses in band:
